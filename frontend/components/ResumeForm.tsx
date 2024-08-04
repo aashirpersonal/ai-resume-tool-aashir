@@ -1,6 +1,7 @@
 // File: frontend/components/ResumeForm.tsx
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { createResume, updateResume } from '../lib/api';
 
 interface ResumeFormProps {
@@ -12,17 +13,22 @@ interface ResumeFormProps {
   onSubmit: () => void;
 }
 
-const ResumeForm: React.FC<ResumeFormProps> = ({ resumeId, initialData, onSubmit }) => {
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [content, setContent] = useState(initialData?.content || '');
+interface ResumeFormData {
+  title: string;
+  content: string;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const ResumeForm: React.FC<ResumeFormProps> = ({ resumeId, initialData, onSubmit }) => {
+  const { register, handleSubmit, formState: { errors } } = useForm<ResumeFormData>({
+    defaultValues: initialData || { title: '', content: '' }
+  });
+
+  const onSubmitForm = async (data: ResumeFormData) => {
     try {
       if (resumeId) {
-        await updateResume(resumeId, { title, content });
+        await updateResume(resumeId, data);
       } else {
-        await createResume({ title, content });
+        await createResume(data);
       }
       onSubmit();
     } catch (error) {
@@ -31,7 +37,7 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ resumeId, initialData, onSubmit
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
           Title
@@ -39,11 +45,10 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ resumeId, initialData, onSubmit
         <input
           type="text"
           id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
+          {...register("title", { required: "Title is required", maxLength: { value: 100, message: "Title must be less than 100 characters" } })}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
       </div>
       <div>
         <label htmlFor="content" className="block text-sm font-medium text-gray-700">
@@ -51,12 +56,11 @@ const ResumeForm: React.FC<ResumeFormProps> = ({ resumeId, initialData, onSubmit
         </label>
         <textarea
           id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
+          {...register("content", { required: "Content is required", minLength: { value: 50, message: "Content must be at least 50 characters long" } })}
           rows={10}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+        {errors.content && <p className="mt-1 text-sm text-red-600">{errors.content.message}</p>}
       </div>
       <div>
         <button

@@ -1,6 +1,7 @@
 // File: frontend/components/JobApplicationForm.tsx
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { createJobApplication, updateJobApplication } from '../lib/api';
 
 interface JobApplicationFormProps {
@@ -14,19 +15,24 @@ interface JobApplicationFormProps {
   onSubmit: () => void;
 }
 
-const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationId, initialData, onSubmit }) => {
-  const [company, setCompany] = useState(initialData?.company || '');
-  const [position, setPosition] = useState(initialData?.position || '');
-  const [description, setDescription] = useState(initialData?.description || '');
-  const [status, setStatus] = useState(initialData?.status || 'Applied');
+interface JobApplicationFormData {
+  company: string;
+  position: string;
+  description: string;
+  status: string;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationId, initialData, onSubmit }) => {
+  const { register, handleSubmit, formState: { errors } } = useForm<JobApplicationFormData>({
+    defaultValues: initialData || { company: '', position: '', description: '', status: 'Applied' }
+  });
+
+  const onSubmitForm = async (data: JobApplicationFormData) => {
     try {
       if (jobApplicationId) {
-        await updateJobApplication(jobApplicationId, { company, position, description, status });
+        await updateJobApplication(jobApplicationId, data);
       } else {
-        await createJobApplication({ company, position, description, status });
+        await createJobApplication(data);
       }
       onSubmit();
     } catch (error) {
@@ -35,7 +41,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
       <div>
         <label htmlFor="company" className="block text-sm font-medium text-gray-700">
           Company
@@ -43,11 +49,10 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
         <input
           type="text"
           id="company"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          required
+          {...register("company", { required: "Company name is required", maxLength: { value: 100, message: "Company name must be less than 100 characters" } })}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+        {errors.company && <p className="mt-1 text-sm text-red-600">{errors.company.message}</p>}
       </div>
       <div>
         <label htmlFor="position" className="block text-sm font-medium text-gray-700">
@@ -56,11 +61,10 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
         <input
           type="text"
           id="position"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-          required
+          {...register("position", { required: "Position is required", maxLength: { value: 100, message: "Position must be less than 100 characters" } })}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+        {errors.position && <p className="mt-1 text-sm text-red-600">{errors.position.message}</p>}
       </div>
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
@@ -68,11 +72,11 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
         </label>
         <textarea
           id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          {...register("description", { required: "Description is required" })}
           rows={4}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
       </div>
       <div>
         <label htmlFor="status" className="block text-sm font-medium text-gray-700">
@@ -80,8 +84,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
         </label>
         <select
           id="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          {...register("status", { required: "Status is required" })}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="Applied">Applied</option>
@@ -89,6 +92,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ jobApplicationI
           <option value="Offer">Offer</option>
           <option value="Rejected">Rejected</option>
         </select>
+        {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>}
       </div>
       <div>
         <button
