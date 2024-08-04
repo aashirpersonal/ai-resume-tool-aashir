@@ -6,10 +6,15 @@ import { getResumes, deleteResume } from '../lib/api';
 interface Resume {
   id: number;
   title: string;
+  content: string;
   created_at: string;
 }
 
-const ResumeList: React.FC = () => {
+interface ResumeListProps {
+  onEdit: (resume: Resume) => void;
+}
+
+const ResumeList: React.FC<ResumeListProps> = ({ onEdit }) => {
   const [resumes, setResumes] = useState<Resume[]>([]);
 
   useEffect(() => {
@@ -48,8 +53,14 @@ const ResumeList: React.FC = () => {
               <p className="text-sm font-medium text-indigo-600 truncate">{resume.title}</p>
               <div className="ml-2 flex-shrink-0 flex">
                 <button
+                  onClick={() => onEdit(resume)}
+                  className="mr-2 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full hover:bg-blue-200"
+                >
+                  Edit
+                </button>
+                <button
                   onClick={() => handleDelete(resume.id)}
-                  className="ml-2 px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200"
+                  className="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200"
                 >
                   Delete
                 </button>
