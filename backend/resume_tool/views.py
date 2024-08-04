@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
+from .ai_utils import tailor_resume
 
 class ResumeViewSet(viewsets.ModelViewSet):
     queryset = Resume.objects.all()
@@ -53,3 +54,27 @@ class UserRegistrationView(APIView):
             )
             return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class TailorResumeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        resume_id = request.data.get('resume_id')
+        job_application_id = request.data.get('job_application_id')
+
+        try:
+            resume = Resume.objects.get(id=resume_id, user=request.user)
+            job_application = JobApplication.objects.get(id=job_application_id, user=request.user)
+        except (Resume.DoesNotExist, JobApplication.DoesNotExist):
+            return Response({'error': 'Invalid resume or job application'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tailored_content = tailor_resume(resume.content, job_application.description)
+
+        tailored_resume = TailoredResume.objects.create(
+            resume=resume,
+            job_application=job_application,
+            content=tailored_content
+        )
+
+        serializer = TailoredResumeSerializer(tailored_resume)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

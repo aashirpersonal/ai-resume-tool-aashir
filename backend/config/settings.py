@@ -160,3 +160,5 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only, configure properly for pr
 # Celery settings
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
