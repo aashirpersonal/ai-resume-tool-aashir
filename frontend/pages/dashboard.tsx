@@ -7,6 +7,7 @@ import ResumeList from '../components/ResumeList';
 import ResumeForm from '../components/ResumeForm';
 import JobApplicationList from '../components/JobApplicationList';
 import JobApplicationForm from '../components/JobApplicationForm';
+import ResumeTailor from '../components/ResumeTailor';
 
 interface Resume {
   id: number;
@@ -29,6 +30,9 @@ const DashboardPage: React.FC = () => {
   const [editingResume, setEditingResume] = useState<Resume | null>(null);
   const [showJobApplicationForm, setShowJobApplicationForm] = useState(false);
   const [editingJobApplication, setEditingJobApplication] = useState<JobApplication | null>(null);
+  const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
+  const [selectedJobApplicationId, setSelectedJobApplicationId] = useState<number | null>(null);
+
 
   const handleResumeEdit = (resume: Resume) => {
     setEditingResume(resume);
@@ -49,10 +53,19 @@ const DashboardPage: React.FC = () => {
     setShowJobApplicationForm(false);
     setEditingJobApplication(null);
   };
+  const handleTailoredResume = (tailoredResumeId: number) => {
+    // Here you can handle the newly created tailored resume,
+    // for example, by fetching it and displaying it to the user
+    console.log('Tailored resume created with ID:', tailoredResumeId);
+    // Reset selection
+    setSelectedResumeId(null);
+    setSelectedJobApplicationId(null);
+  };
 
   return (
     <Layout title="Dashboard | AI Resume Tool">
       <div className="space-y-6">
+        {/* Resumes section */}
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
           <div className="md:flex md:items-center md:justify-between">
             <h2 className="text-lg font-medium text-gray-900">Your Resumes</h2>
@@ -78,8 +91,13 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
-        <ResumeList onEdit={handleResumeEdit} />
+        <ResumeList 
+          onEdit={handleResumeEdit} 
+          onSelect={(resumeId) => setSelectedResumeId(resumeId)}
+          selectedId={selectedResumeId}
+        />
 
+        {/* Job Applications section */}
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
           <div className="md:flex md:items-center md:justify-between">
             <h2 className="text-lg font-medium text-gray-900">Your Job Applications</h2>
@@ -105,7 +123,23 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
-        <JobApplicationList onEdit={handleJobApplicationEdit} />
+        <JobApplicationList 
+          onEdit={handleJobApplicationEdit}
+          onSelect={(jobApplicationId) => setSelectedJobApplicationId(jobApplicationId)}
+          selectedId={selectedJobApplicationId}
+        />
+
+        {/* Resume Tailoring section */}
+        {selectedResumeId && selectedJobApplicationId && (
+          <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Tailor Resume</h2>
+            <ResumeTailor
+              resumeId={selectedResumeId}
+              jobApplicationId={selectedJobApplicationId}
+              onComplete={handleTailoredResume}
+            />
+          </div>
+        )}
       </div>
     </Layout>
   );
