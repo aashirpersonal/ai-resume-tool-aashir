@@ -8,6 +8,7 @@ import ResumeForm from '../components/ResumeForm';
 import JobApplicationList from '../components/JobApplicationList';
 import JobApplicationForm from '../components/JobApplicationForm';
 import ResumeTailor from '../components/ResumeTailor';
+import Alert from '../components/Alert';
 
 interface Resume {
   id: number;
@@ -32,6 +33,7 @@ const DashboardPage: React.FC = () => {
   const [editingJobApplication, setEditingJobApplication] = useState<JobApplication | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
   const [selectedJobApplicationId, setSelectedJobApplicationId] = useState<number | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
 
 
   const handleResumeEdit = (resume: Resume) => {
@@ -61,10 +63,15 @@ const DashboardPage: React.FC = () => {
     setSelectedResumeId(null);
     setSelectedJobApplicationId(null);
   };
+  const handleError = (error: string) => {
+    setGlobalError(error);
+    setTimeout(() => setGlobalError(null), 5000); // Clear error after 5 seconds
+  };
 
   return (
     <Layout title="Dashboard | AI Resume Tool">
       <div className="space-y-6">
+      {globalError && <Alert message={globalError} type="error" />}
         {/* Resumes section */}
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
           <div className="md:flex md:items-center md:justify-between">
