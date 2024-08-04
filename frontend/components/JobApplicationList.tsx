@@ -91,7 +91,7 @@ const JobApplicationList: React.FC<JobApplicationListProps> = ({ onEdit, onSelec
                   Edit
                 </button>
                 <button
-                  onClick={() () => handleDelete(app.id)}
+                  onClick={() => handleDelete(app.id)}
                   className="ml-2 px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200"
                 >
                   Delete
