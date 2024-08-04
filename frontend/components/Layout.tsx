@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'AI Resume Tool' }) =
 
   const handleLogout = () => {
     dispatch(logout());
-    router.push('/login');
+    router.push('/');
   };
 
   return (
@@ -52,9 +52,14 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'AI Resume Tool' }) =
                   </button>
                 </>
               ) : (
-                <Link href="/login" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
-                  Login
-                </Link>
+                <>
+                  <Link href="/login" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
+                    Login
+                  </Link>
+                  <Link href="/register" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
+                    Register
+                  </Link>
+                </>
               )}
             </div>
           </div>
