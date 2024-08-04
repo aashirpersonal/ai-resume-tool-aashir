@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from .serializers import UserSerializer
 from .ai_utils import tailor_resume
+from .tasks import tailor_resume_task
 
 class ResumeViewSet(viewsets.ModelViewSet):
     queryset = Resume.objects.all()
@@ -78,3 +79,45 @@ class TailorResumeView(APIView):
 
         serializer = TailoredResumeSerializer(tailored_resume)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+class TailorResumeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        resume_id = request.data.get('resume_id')
+        job_application_id = request.data.get('job_application_id')
+
+        try:
+            resume = Resume.objects.get(id=resume_id, user=request.user)
+            job_application = JobApplication.objects.get(id=job_application_id, user=request.user)
+        except (Resume.DoesNotExist, JobApplication.DoesNotExist):
+            return Response({'error': 'Invalid resume or job application'}, status=status.HTTP_400_BAD_REQUEST)
+
+        task = tailor_resume_task.delay(resume_id, job_application_id)
+
+        return Response({'task_id': task.id}, status=status.HTTP_202_ACCEPTED)
+
+class TailoredResumeStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, task_id):
+        task = tailor_resume_task.AsyncResult(task_id)
+        if task.state == 'PENDING':
+            response = {
+                'state': task.state,
+                'status': 'Pending...'
+            }
+        elif task.state != 'FAILURE':
+            response = {
+                'state': task.state,
+                'status': 'Task completed successfully.',
+                'result': task.result
+            }
+        else:
+            response = {
+                'state': task.state,
+                'status': 'Task failed.',
+                'error': str(task.info)
+            }
+        return Response(response)
