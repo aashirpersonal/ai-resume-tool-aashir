@@ -56,10 +56,10 @@ const DashboardPage: React.FC = () => {
     setEditingJobApplication(null);
   };
   const handleTailoredResume = (tailoredResumeId: number) => {
-    // Here you can handle the newly created tailored resume,
-    // for example, by fetching it and displaying it to the user
     console.log('Tailored resume created with ID:', tailoredResumeId);
-    // Reset selection
+    // Here we should fetch the tailored resume and display it to the user
+    // For now, we'll just show a success message
+    setGlobalError('Resume successfully tailored! You can now download or view it.');
     setSelectedResumeId(null);
     setSelectedJobApplicationId(null);
   };
@@ -71,11 +71,43 @@ const DashboardPage: React.FC = () => {
   return (
     <Layout title="Dashboard | AI Resume Tool">
       <div className="space-y-6">
-      {globalError && <Alert message={globalError} type="error" />}
-        {/* Resumes section */}
+        {globalError && <Alert message={globalError} type="success" />}
+        
+        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Tailor Your Resume</h2>
+          <p className="mb-4">Select a resume and a job application to tailor your resume automatically.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-md font-medium text-gray-700 mb-2">Select a Resume</h3>
+              <ResumeList 
+                onEdit={setEditingResume}
+                onSelect={setSelectedResumeId}
+                selectedId={selectedResumeId}
+              />
+            </div>
+            <div>
+              <h3 className="text-md font-medium text-gray-700 mb-2">Select a Job Application</h3>
+              <JobApplicationList 
+                onEdit={setEditingJobApplication}
+                onSelect={setSelectedJobApplicationId}
+                selectedId={selectedJobApplicationId}
+              />
+            </div>
+          </div>
+          {selectedResumeId && selectedJobApplicationId && (
+            <div className="mt-4">
+              <ResumeTailor
+                resumeId={selectedResumeId}
+                jobApplicationId={selectedJobApplicationId}
+                onComplete={handleTailoredResume}
+              />
+            </div>
+          )}
+        </div>
+
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
           <div className="md:flex md:items-center md:justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Your Resumes</h2>
+            <h2 className="text-lg font-medium text-gray-900">Manage Your Resumes</h2>
             <div className="mt-4 md:mt-0">
               <button
                 onClick={() => {
@@ -93,21 +125,18 @@ const DashboardPage: React.FC = () => {
               <ResumeForm
                 resumeId={editingResume?.id}
                 initialData={editingResume ? { title: editingResume.title, content: editingResume.content } : undefined}
-                onSubmit={handleResumeFormSubmit}
+                onSubmit={() => {
+                  setShowResumeForm(false);
+                  setEditingResume(null);
+                }}
               />
             </div>
           )}
         </div>
-        <ResumeList 
-          onEdit={handleResumeEdit} 
-          onSelect={(resumeId) => setSelectedResumeId(resumeId)}
-          selectedId={selectedResumeId}
-        />
 
-        {/* Job Applications section */}
         <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
           <div className="md:flex md:items-center md:justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Your Job Applications</h2>
+            <h2 className="text-lg font-medium text-gray-900">Manage Your Job Applications</h2>
             <div className="mt-4 md:mt-0">
               <button
                 onClick={() => {
@@ -125,28 +154,14 @@ const DashboardPage: React.FC = () => {
               <JobApplicationForm
                 jobApplicationId={editingJobApplication?.id}
                 initialData={editingJobApplication}
-                onSubmit={handleJobApplicationFormSubmit}
+                onSubmit={() => {
+                  setShowJobApplicationForm(false);
+                  setEditingJobApplication(null);
+                }}
               />
             </div>
           )}
         </div>
-        <JobApplicationList 
-          onEdit={handleJobApplicationEdit}
-          onSelect={(jobApplicationId) => setSelectedJobApplicationId(jobApplicationId)}
-          selectedId={selectedJobApplicationId}
-        />
-
-        {/* Resume Tailoring section */}
-        {selectedResumeId && selectedJobApplicationId && (
-          <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Tailor Resume</h2>
-            <ResumeTailor
-              resumeId={selectedResumeId}
-              jobApplicationId={selectedJobApplicationId}
-              onComplete={handleTailoredResume}
-            />
-          </div>
-        )}
       </div>
     </Layout>
   );
