@@ -11,7 +11,7 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  token: null,
+  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -22,6 +22,7 @@ export const login = createAsyncThunk(
   async ({ username, password }: { username: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await axios.post('http://localhost:8000/api/token/', { username, password });
+      localStorage.setItem('token', response.data.access);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -36,6 +37,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.token = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('token');
     },
   },
   extraReducers: (builder) => {

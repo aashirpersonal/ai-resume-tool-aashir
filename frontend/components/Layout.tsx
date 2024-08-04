@@ -3,6 +3,10 @@
 import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useSelector, useDispatch } from 'react-redux';
+import { useRouter } from 'next/router';
+import { RootState, AppDispatch } from '../store';
+import { logout } from '../store/authSlice';
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -10,6 +14,15 @@ type LayoutProps = {
 };
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'AI Resume Tool' }) => {
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push('/login');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Head>
@@ -26,9 +39,23 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'AI Resume Tool' }) =
               </Link>
             </div>
             <div className="flex items-center">
-              <Link href="/login" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
-                Login
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link href="/dashboard" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link href="/login" className="text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-md">
+                  Login
+                </Link>
+              )}
             </div>
           </div>
         </div>
