@@ -2,19 +2,24 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
+import { login } from '../store/authSlice';
 import Layout from '../components/Layout';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual login logic here
-    console.log('Login attempt', { username, password });
-    // For now, just redirect to dashboard
-    router.push('/dashboard');
+    const resultAction = await dispatch(login({ username, password }));
+    if (login.fulfilled.match(resultAction)) {
+      router.push('/dashboard');
+    }
   };
 
   return (
@@ -27,6 +32,7 @@ const LoginPage: React.FC = () => {
             </h2>
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {error && <div className="text-red-500">{error}</div>}
             <input type="hidden" name="remember" value="true" />
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
@@ -65,8 +71,9 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={loading}
               >
-                Sign in
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
           </form>
