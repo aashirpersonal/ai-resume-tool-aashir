@@ -5,6 +5,8 @@ import Layout from '../components/Layout';
 import withAuth from '../components/withAuth';
 import ResumeList from '../components/ResumeList';
 import ResumeForm from '../components/ResumeForm';
+import JobApplicationList from '../components/JobApplicationList';
+import JobApplicationForm from '../components/JobApplicationForm';
 
 interface Resume {
   id: number;
@@ -13,18 +15,39 @@ interface Resume {
   created_at: string;
 }
 
-const DashboardPage: React.FC = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [editingResume, setEditingResume] = useState<Resume | null>(null);
+interface JobApplication {
+  id: number;
+  company: string;
+  position: string;
+  description: string;
+  status: string;
+  applied_at: string;
+}
 
-  const handleEdit = (resume: Resume) => {
+const DashboardPage: React.FC = () => {
+  const [showResumeForm, setShowResumeForm] = useState(false);
+  const [editingResume, setEditingResume] = useState<Resume | null>(null);
+  const [showJobApplicationForm, setShowJobApplicationForm] = useState(false);
+  const [editingJobApplication, setEditingJobApplication] = useState<JobApplication | null>(null);
+
+  const handleResumeEdit = (resume: Resume) => {
     setEditingResume(resume);
-    setShowForm(true);
+    setShowResumeForm(true);
   };
 
-  const handleFormSubmit = () => {
-    setShowForm(false);
+  const handleJobApplicationEdit = (jobApplication: JobApplication) => {
+    setEditingJobApplication(jobApplication);
+    setShowJobApplicationForm(true);
+  };
+
+  const handleResumeFormSubmit = () => {
+    setShowResumeForm(false);
     setEditingResume(null);
+  };
+
+  const handleJobApplicationFormSubmit = () => {
+    setShowJobApplicationForm(false);
+    setEditingJobApplication(null);
   };
 
   return (
@@ -37,25 +60,52 @@ const DashboardPage: React.FC = () => {
               <button
                 onClick={() => {
                   setEditingResume(null);
-                  setShowForm(!showForm);
+                  setShowResumeForm(!showResumeForm);
                 }}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                {showForm ? 'Cancel' : 'Create New Resume'}
+                {showResumeForm ? 'Cancel' : 'Create New Resume'}
               </button>
             </div>
           </div>
-          {showForm && (
+          {showResumeForm && (
             <div className="mt-6">
               <ResumeForm
                 resumeId={editingResume?.id}
                 initialData={editingResume ? { title: editingResume.title, content: editingResume.content } : undefined}
-                onSubmit={handleFormSubmit}
+                onSubmit={handleResumeFormSubmit}
               />
             </div>
           )}
         </div>
-        <ResumeList onEdit={handleEdit} />
+        <ResumeList onEdit={handleResumeEdit} />
+
+        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
+          <div className="md:flex md:items-center md:justify-between">
+            <h2 className="text-lg font-medium text-gray-900">Your Job Applications</h2>
+            <div className="mt-4 md:mt-0">
+              <button
+                onClick={() => {
+                  setEditingJobApplication(null);
+                  setShowJobApplicationForm(!showJobApplicationForm);
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                {showJobApplicationForm ? 'Cancel' : 'Create New Job Application'}
+              </button>
+            </div>
+          </div>
+          {showJobApplicationForm && (
+            <div className="mt-6">
+              <JobApplicationForm
+                jobApplicationId={editingJobApplication?.id}
+                initialData={editingJobApplication}
+                onSubmit={handleJobApplicationFormSubmit}
+              />
+            </div>
+          )}
+        </div>
+        <JobApplicationList onEdit={handleJobApplicationEdit} />
       </div>
     </Layout>
   );
